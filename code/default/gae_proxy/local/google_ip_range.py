@@ -99,6 +99,7 @@ class IpRange(object):
         self.default_range_file = os.path.join(current_path, "ip_range.txt")
         self.user_range_file = os.path.join(config.DATA_PATH, "ip_range.txt")
 
+        self.ipv6_scan_ratio = config.CONFIG.getint("google_ip", "ipv6_scan_ratio")
         ip_source = config.CONFIG.get("google_ip", "ip_source")
         if ip_source == "ip_pool":
             self.ip_pool = IpPool()
@@ -127,14 +128,18 @@ class IpRange(object):
 
     def load_range_content(self, default=False):
         if not default and os.path.isfile(self.user_range_file):
-            self.range_file = self.user_range_file
-        else:
-            self.range_file = self.default_range_file
+            fd = open(self.user_range_file, "r")
+            if fd:
+                content = fd.read()
+                fd.close()
+                if len(content) > 10:
+                    xlog.info("load ip range file:%s", self.user_range_file)
+                    return content
 
-        xlog.info("load ip range file:%s", self.range_file)
-        fd = open(self.range_file, "r")
+        xlog.info("load ip range file:%s", self.default_range_file)
+        fd = open(self.default_range_file, "r")
         if not fd:
-            xlog.error("load ip range %s fail", self.range_file)
+            xlog.error("load ip range %s fail", self.default_range_file)
             return
 
         content = fd.read()
@@ -201,7 +206,7 @@ class IpRange(object):
                 xlog.warn("IpRange get_ip but use_ip is %s", use_ipv6)
 
             ran = random.randint(0, 100)
-            if ran < 20:
+            if ran < self.ipv6_scan_ratio:
                 return self.get_ipv6()
             else:
                 return self.get_ipv4()

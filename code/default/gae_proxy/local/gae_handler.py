@@ -241,6 +241,7 @@ def request_gae_server(headers, body, url, timeout):
 
 
 def pack_request(method, url, headers, body):
+    headers = dict(headers)
     if isinstance(body, basestring) and body:
         if len(body) < 10 * 1024 * 1024 and 'Content-Encoding' not in headers:
             # 可以压缩
@@ -365,7 +366,7 @@ def request_gae_proxy(method, url, headers, body, timeout=60, retry=True):
 
 
 def handler(method, url, headers, body, wfile):
-    if not url.startswith("http"):
+    if not url.startswith("http") and not url.startswith("HTTP"):
         xlog.error("gae:%s", url)
         return
 

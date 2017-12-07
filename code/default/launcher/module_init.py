@@ -88,9 +88,21 @@ def stop(module):
     return "stop success."
 
 
+def call_each_module(api_name, args):
+    for module in proc_handler:
+        try:
+            apis = proc_handler[module]["imp"].local.apis
+            if not hasattr(apis, api_name):
+                continue
+            api = getattr(apis, api_name)
+            api(args)
+        except Exception as e:
+            xlog.exception("call %s api:%s, except:%r", module, api_name, e)
+
+
 def start_all_auto():
-    for module in config.config["modules"]:
-        if module == "launcher":
+    for module in config.modules:
+        if module in ["launcher"]:
             continue
         if not os.path.isdir(os.path.join(root_path, module)):
             continue

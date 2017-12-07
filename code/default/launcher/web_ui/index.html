@@ -272,11 +272,17 @@
             });
         }
 
-        function updateVersion() {
+        function updateBase(checkhash){
             $('#update-notify').addClass('hide');
             var pageRequests = {};
             pageRequests['cmd'] = 'update_version';
             pageRequests['version'] = versionToUpdate;
+
+            if (!checkhash)
+            {
+                pageRequests['checkhash'] = 0;
+            }
+
             versionToUpdate = null;
 
             $.ajax({
@@ -296,6 +302,13 @@
                     displayErrorMessage();
                 }
             });
+        }
+
+        function updateVersion() {
+            updateBase(1);
+        }
+        function updateVersionWithoutHashCheck(){
+            updateBase(0);
         }
 
         function getUpdateInfo() {
